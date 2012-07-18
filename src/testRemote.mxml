@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   minWidth="955"
+			   minHeight="600">
+	<s:layout>
+		<s:BasicLayout/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import mx.managers.CursorManager;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.events.FaultEvent;
+
+			private function faultHandler(fault:FaultEvent):void
+			{
+				CursorManager.removeBusyCursor();
+				result_text.text="code:\n" + fault.fault.faultCode + "\n\nMessage:\n" + fault.fault.faultString + "\n\nDetail:\n" + fault.fault.faultDetail;
+			}
+
+			private function resultHandler(evt:ResultEvent):void
+			{
+				trace("success");
+				result_text.text+=evt.message.body.toString() + "\n"; // same as: evt.result.toString();
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:RemoteObject id="myservice"
+						 fault="faultHandler(event)"
+						 showBusyCursor="true"
+						 source="HelloWorld"
+						 destination="amfphp">
+			<mx:method name="sayHello"
+					   result="resultHandler(event)"/>
+		</mx:RemoteObject>
+	</fx:Declarations>
+	<mx:Button x="250"
+			   y="157"
+			   label="sayHello"
+			   width="79"
+			   click="myservice.getOperation('sayHello').send();"/>
+	<mx:Button x="250"
+			   y="187"
+			   label="test fault"
+			   click="myservice.getOperation('foo').send(); "/>
+	<mx:TextArea x="10"
+				 y="36"
+				 width="319"
+				 height="113"
+				 id="result_text"/>
+	<mx:Label x="10"
+			  y="10"
+			  text="Result:"/>
+</s:Application>
